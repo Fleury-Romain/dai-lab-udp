@@ -4,61 +4,44 @@ import java.io.IOException;
 import java.net.DatagramSocket;
 import java.net.DatagramPacket;
 import java.net.InetSocketAddress;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
+
 import com.google.gson.Gson;
+
+/*
+Bibliothèque : Jackson, mieux : Gson {"uuid":Ox..., "sound":"ti-ta-ti", "timestamp":1500000000000}
+*/
 
 import static java.nio.charset.StandardCharsets.*;
 
 enum Instrument {
-    PIANO, TRUMPER, FLUTE, VIOLIN, DRUM
+    PIANO("ti-ta-ti"), TRUMPET("pouet"), FLUTE("trulu"), VIOLIN("gzi-gzi"), DRUM("boum-boum");
+    private String sound;
+    Instrument(String sound) { this.sound = sound; } // constructeur appelé par PIANO("ti-ta-ti"), etc...
+    public String toString() { return sound; }
 }
 
-public class JsonExample {
+class Client {
+    private static final String IPADDRESS = "239.255.22.5";
+    private static final int PORT = 9904;
 
-    public static void main(String[] args) {
-        // Créer un objet à sérialiser en JSON
-        DataObject dataObject = new Musician("123456", "pouet");
-
-        // Utiliser Gson pour générer la chaîne JSON
-        Gson gson = new Gson();
-        String json = gson.toJson(dataObject);
-
-        // Afficher la chaîne JSON résultante
-        System.out.println(json);
+    public static void sendData(String jsonData) {
+        try (DatagramSocket socket = new DatagramSocket()) {
+            byte[] payload = jsonData.getBytes(UTF_8);
+            InetSocketAddress dest_address = new InetSocketAddress(IPADDRESS, PORT);
+            var packet = new DatagramPacket(payload, payload.length, dest_address);
+            socket.send(packet);
+            System.out.println(jsonData);
+        } catch (IOException ex) {
+            System.out.println(ex.getMessage());
+        }
     }
 }
-
-
-// Une classe simple pour l'exemple
-class Personne {
-    private String nom;
-    private String prenom;
-    private int age;
-
-    // Constructeur, getters et setters (peuvent être générés automatiquement par votre IDE)
-
-    public Personne(String nom, String prenom, int age) {
-        this.nom = nom;
-        this.prenom = prenom;
-        this.age = age;
-    }
-}
-
-
 
 class Musician {
-    final static String IPADDRESS = "239.255.22.5";
-    final static int PORT = 9904;
-    final static int TIMER = 1; // timer in seconds
-    final static Map<String, String> INSTRUMENT_SOUND = new HashMap<String, String>() {{
-        put("piano",   "ti-ta-ti");
-        put("trumpet", "pouet");
-        put("flute",   "trulu");
-        put("violin",  "gzi-gzi");
-        put("drum",    "boum-boum");
-    }};
     final private UUID uuid;
     final private Instrument instrument;
 
@@ -66,28 +49,25 @@ class Musician {
         this.instrument = instrument;
         this.uuid = UUID.randomUUID();
     }
-    /*
-    As long as it is running, every second it will emit a sound
-    (well... simulate the emission of a sound: we are talking about a communication protocol).
-    Bibliothèque : Jackson, mieux : Gson {"uuid":Ox..., "sound":"ti-ta-ti", "timestamp":1500000000000}
-    */
-    public static void main(String[] args) {
-        try (DatagramSocket socket = new DatagramSocket()) {
-            while (true) {
-                String sound = "ti-ta-ti";                String uuid = "Ox...";
-                String message = "{\"uuid\":\"" + uuid + "\", \"sound\":\"" + sound + "\", \"timestamp\":1500000000000}";
-                byte[] payload = message.getBytes(UTF_8);
-                InetSocketAddress dest_address = new InetSocketAddress(IPADDRESS, PORT);
-                var packet = new DatagramPacket(payload, payload.length, dest_address);
-                socket.send(packet);
-                try {
-                    Thread.sleep(TIMER * 1000);
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
-            }
-        } catch (IOException ex) {
-            System.out.println(ex.getMessage());
+
+    public void run() throws InterruptedException {
+        ScheduledExecutorService executorService = Executors.newSingleThreadScheduledExecutor();
+        int timerPeriod = 1;
+        var a = executorService.scheduleAtFixedRate(this::sendData, 0, timerPeriod, TimeUnit.SECONDS);
+        /*
+        try {
+            a.wait();
+        } catch (InterruptedException e) {
+            System.out.println(e.getMessage());
         }
+        */
+    }
+
+    private void sendData() {
+        Client.sendData(this.toJsonString());
+    }
+
+    public String toJsonString() {
+        return "{\"uuid\":\"" + this.uuid + "\", \"sound\":\"" + this.instrument + "\"}";
     }
 }
