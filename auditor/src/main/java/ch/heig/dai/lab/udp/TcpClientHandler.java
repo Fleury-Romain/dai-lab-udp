@@ -19,18 +19,14 @@ public class TcpClientHandler implements Runnable{
                 try{
                     Socket sock = serverSocket.accept();
                     try(
-                            var in = new BufferedReader(new InputStreamReader(sock.getInputStream(), UTF_8));
                             var out = new BufferedWriter(new OutputStreamWriter(sock.getOutputStream(), UTF_8));
                     ){
                         // Envoyer la liste des musiciens actifs au client.
-                        String line;
-                        while ((line = in.readLine()) != null && !line.equals("exit")) {
-                            // Nettoyer le tableau de musicien
 
-                            out.write(App.musicians+line+"\n");
-                            out.flush();
-                        }
-                        break;
+                        // Nettoyer le tableau de musicien
+
+                        out.write(App.musicians + "\n");
+                        out.flush();
                     } catch (IOException e) {
                         throw new RuntimeException(e);
                     }

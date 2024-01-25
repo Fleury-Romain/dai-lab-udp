@@ -18,7 +18,7 @@ public class UdpRoutine implements Runnable{
         while(true) {
             try (MulticastSocket socket = new MulticastSocket(port)) {
                 InetSocketAddress group_address = new InetSocketAddress(ip, port);
-                NetworkInterface netif = NetworkInterface.getByName("lo");
+                NetworkInterface netif = NetworkInterface.getByName("eth0");
                 socket.joinGroup(group_address, netif);
 
                 byte[] buffer = new byte[1024];
