@@ -34,7 +34,7 @@ class Client {
             InetSocketAddress dest_address = new InetSocketAddress(IPADDRESS, PORT);
             var packet = new DatagramPacket(payload, payload.length, dest_address);
             socket.send(packet);
-            System.out.println(jsonData);
+            // System.out.println(jsonData);
         } catch (IOException ex) {
             System.out.println(ex.getMessage());
         }

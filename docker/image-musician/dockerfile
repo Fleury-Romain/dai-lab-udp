@@ -1,0 +1,7 @@
+FROM openjdk:11-jre-slim
+
+WORKDIR /app
+
+COPY musician/target/musician-1.0.jar /app/
+
+CMD ["java", "-jar", "musician-1.0.jar"]
