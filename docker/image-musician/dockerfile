@@ -1,7 +1,8 @@
-FROM openjdk:11-jre-slim
+FROM eclipse-temurin:21-jdk-jammy
 
 WORKDIR /app
 
 COPY musician/target/musician-1.0.jar /app/
+COPY docker/image-musician/entrypoint.sh /app/
 
-CMD ["java", "-jar", "musician-1.0.jar"]
+ENTRYPOINT ["/app/entrypoint.sh"]
