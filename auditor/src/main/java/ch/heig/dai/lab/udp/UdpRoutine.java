@@ -2,6 +2,7 @@ package ch.heig.dai.lab.udp;
 
 import java.io.IOException;
 import java.net.*;
+import java.time.Instant;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 
@@ -25,9 +26,15 @@ public class UdpRoutine implements Runnable{
                 DatagramPacket packet = new DatagramPacket(buffer, buffer.length);
                 socket.receive(packet);
                 String message = new String(packet.getData(), 0, packet.getLength(), UTF_8);
-                App.musicians.add(message);
 
-                System.out.println("Received message: " + message + " from " + packet.getAddress() + ", port " + packet.getPort());
+                Json data = new Json(message);
+                long timestamp = System.currentTimeMillis();
+                String uuid = data.getValue("uuid");
+                String instrument = data.getValue("sound");
+                App.musicians.add(data.createJsonString(uuid, instrument, timestamp));
+
+
+                System.out.println(App.musicians);
                 socket.leaveGroup(group_address, netif);
             } catch (IOException ex) {
                 System.out.println(ex.getMessage());

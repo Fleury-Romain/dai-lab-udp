@@ -28,7 +28,7 @@ public class App
             "]";
 
     public static void main( String[] args ) throws ExecutionException, InterruptedException {
-        UdpRoutine udpr = new UdpRoutine("239.1.2.3", 9904);
+        UdpRoutine udpr = new UdpRoutine("239.255.22.5", 9904);
         TcpClientHandler tcps = new TcpClientHandler("localhost", 2205);
 
         // Test
